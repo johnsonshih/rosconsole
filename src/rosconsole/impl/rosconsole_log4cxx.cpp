@@ -36,16 +36,8 @@
 #include "ros/console.h"
 #include "ros/assert.h"
 #include <ros/time.h>
-#include <ros/macros.h>
-#ifdef ROS_BUILD_SHARED_LIBS // ros is being built around shared libraries
-  #ifdef rosconsole_log4cxx_EXPORTS // we are building a shared lib/dll
-    #define ROSCONSOLE_LOG4CXX_DECL ROS_HELPER_EXPORT
-  #else // we are using shared lib/dll
-    #define ROSCONSOLE_LOG4CXX_DECL ROS_HELPER_IMPORT
-  #endif
-#else // ros is being built around static libraries
-  #define ROSCONSOLE_LOG4CXX_DECL
-#endif
+#define ROSCONSOLE_CONSOLE_IMPL_EXPORTS
+#include "ros/console_impl.h"
 
 #include "log4cxx/appenderskeleton.h"
 #include "log4cxx/spi/loggingevent.h"
@@ -135,7 +127,7 @@ protected:
   }
 };
 
-ROSCONSOLE_LOG4CXX_DECL void initialize()
+void initialize()
 {
   // First set up some sane defaults programmatically.
   log4cxx::LoggerPtr ros_logger = log4cxx::Logger::getLogger(ROSCONSOLE_ROOT_LOGGER_NAME);
@@ -187,7 +179,7 @@ ROSCONSOLE_LOG4CXX_DECL void initialize()
 }
 
 
-ROSCONSOLE_LOG4CXX_DECL void print(void* handle, ::ros::console::Level level, const char* str, const char* file, const char* function, int line)
+void print(void* handle, ::ros::console::Level level, const char* str, const char* file, const char* function, int line)
 {
   log4cxx::Logger* logger  = (log4cxx::Logger*)handle;
   try
@@ -200,18 +192,18 @@ ROSCONSOLE_LOG4CXX_DECL void print(void* handle, ::ros::console::Level level, co
   }
 }
 
-ROSCONSOLE_LOG4CXX_DECL bool isEnabledFor(void* handle, ::ros::console::Level level)
+bool isEnabledFor(void* handle, ::ros::console::Level level)
 {
   log4cxx::Logger* logger  = (log4cxx::Logger*)handle;
   return logger->isEnabledFor(g_level_lookup[level]);
 }
 
-ROSCONSOLE_LOG4CXX_DECL void* getHandle(const std::string& name)
+void* getHandle(const std::string& name)
 {
   return log4cxx::Logger::getLogger(name);
 }
 
-ROSCONSOLE_LOG4CXX_DECL std::string getName(void* handle)
+std::string getName(void* handle)
 {
   const log4cxx::spi::LoggingEvent* event = (const log4cxx::spi::LoggingEvent*)handle;
 #ifdef _MSC_VER
@@ -222,7 +214,7 @@ ROSCONSOLE_LOG4CXX_DECL std::string getName(void* handle)
 #endif
 }
 
-ROSCONSOLE_LOG4CXX_DECL bool get_loggers(std::map<std::string, levels::Level>& loggers)
+bool get_loggers(std::map<std::string, levels::Level>& loggers)
 {
   log4cxx::spi::LoggerRepositoryPtr repo = log4cxx::Logger::getLogger(ROSCONSOLE_ROOT_LOGGER_NAME)->getLoggerRepository();
 
@@ -270,7 +262,7 @@ ROSCONSOLE_LOG4CXX_DECL bool get_loggers(std::map<std::string, levels::Level>& l
   return true;
 }
 
-ROSCONSOLE_LOG4CXX_DECL bool set_logger_level(const std::string& name, levels::Level level)
+bool set_logger_level(const std::string& name, levels::Level level)
 {
   log4cxx::LevelPtr log4cxx_level;
   if (level == levels::Debug)
@@ -358,14 +350,14 @@ protected:
 
 Log4cxxAppender* g_log4cxx_appender;
 
-ROSCONSOLE_LOG4CXX_DECL void register_appender(LogAppender* appender)
+void register_appender(LogAppender* appender)
 {
   g_log4cxx_appender = new Log4cxxAppender(appender);
   const log4cxx::LoggerPtr& logger = log4cxx::Logger::getLogger(ROSCONSOLE_ROOT_LOGGER_NAME);
   logger->addAppender(g_log4cxx_appender);
 }
 
-ROSCONSOLE_LOG4CXX_DECL void shutdown()
+void shutdown()
 {
   const log4cxx::LoggerPtr& logger = log4cxx::Logger::getLogger(ROSCONSOLE_ROOT_LOGGER_NAME);
   logger->removeAppender(g_log4cxx_appender);
